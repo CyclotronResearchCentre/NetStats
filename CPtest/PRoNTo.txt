@@ -1,0 +1,40 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Course for the "Pattern Recognition in Neuroimaging Toolbox", aka. PRoNTo
+UCL, London, 5 July 2012
+
+
+Dear colleagues,
+
+
+We are pleased to announce that registration for the first PRoNTo(*) course is now open.
+
+
+This one-day course will be held for the second time in London on July 5, and will offer a comprehensive coverage of all "Pattern Recognition in Neuroimaging Toolbox" features and functionalities, including:
+
+- introduction to neuroimaging and machine learning concepts
+
+- specific pattern recognition methods for neuroimaging
+
+- software demonstration, and
+
+- hands on session
+
+ 
+
+For further information and registration, please see:
+
+http://www.mlnl.cs.ucl.ac.uk/pronto/prtcourses.html
+
+
+Sincerely,
+C. Phillips and J. Mourao-Miranda, on behalf of the PRoNTo team.
+
+
+
+(*)
+PRoNTo aims to facilitate the interaction between the machine learning and neuroimaging communities. The toolbox provides a variety of tools for the neuroscience and clinical neuroscience communities, enabling these communities to ask new questions that cannot be easily investigated using existing statistical analysis tools. On the other hand the machine learning community can easily contribute to the toolbox with novel published machine learning algorithms. PRoNTo is directly compatible with SPM8.
+See http://www.mlnl.cs.ucl.ac.uk/pronto/ for more details and download.
+The poster presented at the OHBM2012 conference is also available here https://ww4.aievolution.com/hbm1201/files/content/abstracts/97421/0391_Schrouff.pdf
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
