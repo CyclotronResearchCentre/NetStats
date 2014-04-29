@@ -1,8 +1,8 @@
 rm(list = ls()) # Clear all variables
 
-path = '/home/erik'
-#path = '/media/Mobsol'
-source(paste(path,'/Dropbox/Analysis/Rcode/plotting.r', sep=""))
+path = '/Users/erik/Dropbox/Analysis/network-statplots/'
+
+source(paste(path,'plotting.r', sep=""))
 
 #debug(plot_network_graphs)
 ntwk_metrics = c("Clustering","Closeness_Centrality","Degree","Betweenness_Centrality","Core_Number","Load_Centrality","Degree_Centrality","Isolates","Triangles")
@@ -26,7 +26,7 @@ node = "Right-Hippocampus"
 node_metric = "Triangles"
 
 extra_metric = "PSQI"
-filename = 'BDNF_newtitles_pruned.csv'
+filename = 'BDNF.csv'
 #filename = 'BDNF_NBS_pruned.csv'
 #filename = 'BDNF_NBS_pruned_inv.csv'
 omit = FALSE

@@ -1,4 +1,5 @@
 network-statplots
 =================
 
-This repo contains R code to plot the outputs of the nipype connectivity pipelines
+This repo contains some simple R and ggplot2 (had.co.nz/ggplot2/)functions to plot the outputs of the Nipype connectivity pipelines.
+
