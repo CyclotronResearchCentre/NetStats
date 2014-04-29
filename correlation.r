@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 library(ggplot2)
 library(plyr)
 library(reshape)

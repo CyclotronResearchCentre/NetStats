@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 library(ggplot2)
 library(plyr)
 library(reshape)
@@ -241,105 +242,6 @@ plot_nodal_bargraph_bygroup <- function(filename, node_id, metric, group1, group
             
     ggsave(paste(title,'.png', sep=""))
     cat(paste(title,'.png\n', sep=""))
-}
-
-plot_network_metric_correlation <- function(filename, ntwk_metrics) {
-    title = 'Correlation between Network Metrics'
-    df = read.csv(filename, header=T) # Read in the comma-separated value file
-    node_data = df[1:(1+length(ntwk_metrics))] # Separate the nodal metric data
-    mean_per_node_metrics = aggregate(. ~ Node, data = node_data, mean) # Compute the mean for each metric for each subject
-    mean_per_node_metrics[, match("Isolates", names(mean_per_node_metrics))] = length(levels(node_data$Node))*mean_per_node_metrics[, match("Isolates", names(mean_per_node_metrics))]
-    rownames(mean_per_node_metrics)=mean_per_node_metrics[,1] # Set subject name as row names
-
-    per_node_metrics_noNA <- na.omit(mean_per_node_metrics)
-    per_node_metrics_noNA.cor <- cor(per_node_metrics_noNA[2:length(per_node_metrics_noNA)])
-
-    metrics.m <- melt(per_node_metrics_noNA.cor)
-    metrics.o <- metrics.m[order(metrics.m$value), ]
-    metrics.o$X1 <- factor(metrics.o$X1, levels = unique(metrics.o$X1))
-    metrics.o$X2 <- factor(metrics.o$X2, levels = unique(metrics.o$X2))
-    breaks = c(-1, -0.5, 0, 0.5, 1)
-    colours=c("red", "white", "steelblue")
-    #pdf(file=paste("./",tractnums[a],subjectlist[idx],"cmatrix.pdf"))
-    print(p <- ggplot(metrics.o) + geom_tile(aes(X1, X2, fill = value)) + scale_fill_gradientn(colours=colours, breaks=breaks, labels=format(breaks)) + labs(x = "Metric", y = "Metric", fill= "Correlation") + opts(title=title, axis.text.x=theme_text(angle=-90, hjust=0)))
-}
-
-plot_clinical_metric_correlation <- function(filename, ntwk_metrics, group_metrics, clinical_metrics, omit=TRUE) {
-    title = 'Correlation between Psychological Metrics'
-    df = read.csv(filename, header=T) # Read in the comma-separated value file
-    node_data = df[2:(2+length(ntwk_metrics))] # Separate the nodal metric data
-    mean_node_metrics = aggregate(. ~ Subject, data = node_data, mean) # Compute the mean for each metric for each subject
-    mean_node_metrics[, match("Isolates", names(mean_node_metrics))] = length(levels(node_data$Node))*mean_node_metrics[, match("Isolates", names(mean_node_metrics))]
-    rownames(mean_node_metrics)=mean_node_metrics[,1] # Set subject name as row names
-
-    # Choose a single node so we can pull the subject data
-    datasubset <- subset(df, Node=='Brain-Stem')
-    subject_data = datasubset[,(2+length(ntwk_metrics)):length(datasubset)] # Only non-nodal measures
-    rownames(subject_data) <- subject_data$Subject # Set subject name as row names
-#    attach(subject_data)
-
-    # Merge the subject-specific data with the subjects' mean nodal metrics
-    complete_data = merge(mean_node_metrics, subject_data, by = "Subject")
-
-    clinical_metrics <- clinical_metrics[-match(group_metrics,clinical_metrics)]
-    clinical_independent = complete_data[match(clinical_metrics, names(complete_data))]
-    clinical_independent = clinical_independent[sapply(clinical_independent, is.numeric)]
-    if (omit == TRUE) {
-        clinical_noNA = na.omit(clinical_independent)
-        clinical.cor <- cor(clinical_noNA)
-    } else {
-        clinical.cor <- cor(clinical_independent)
-    }
-   
-    metrics.m <- melt(clinical.cor)
-    metrics.o <- metrics.m[order(metrics.m$value), ]
-    metrics.o$X1 <- factor(metrics.o$X1, levels = unique(metrics.o$X1))
-    metrics.o$X2 <- factor(metrics.o$X2, levels = unique(metrics.o$X2))
-    #pdf(file=paste("./",tractnums[a],subjectlist[idx],"cmatrix.pdf"))
-    breaks = c(-1, -0.5, 0, 0.5, 1)
-    colours=c("red", "white", "steelblue")
-    dev.new()
-    print(p <- ggplot(metrics.o) + geom_tile(aes(X1, X2, fill = value)) + scale_fill_gradientn(colours=colours, breaks=breaks, labels=format(breaks)) + labs(x = "Metric", y = "Metric", fill= "Correlation") + opts(title=title, axis.text.x=theme_text(angle=-90, hjust=0)))
-}
-
-plot_all_metric_correlation <- function(filename, ntwk_metrics, group_metrics, clinical_metrics, omit=TRUE) {
-    title = 'Correlation between Psychological and Network Metrics'
-    df = read.csv(filename, header=T) # Read in the comma-separated value file
-    node_data = df[2:(2+length(ntwk_metrics))] # Separate the nodal metric data
-    mean_node_metrics = aggregate(. ~ Subject, data = node_data, mean) # Compute the mean for each metric for each subject
-
-    mean_node_metrics[, match("Isolates", names(mean_node_metrics))] = length(levels(node_data$Node))*mean_node_metrics[, match("Isolates", names(mean_node_metrics))]
-    rownames(mean_node_metrics)=mean_node_metrics[,1] # Set subject name as row names
-
-    # Choose a single node so we can pull the subject data
-    datasubset <- subset(df, Node=='Brain-Stem')
-    subject_data = datasubset[,(2+length(ntwk_metrics)):length(datasubset)] # Only non-nodal measures
-    rownames(subject_data) <- subject_data$Subject # Set subject name as row names
-
-    # Merge the subject-specific data with the subjects' mean nodal metrics
-    complete_data = merge(mean_node_metrics, subject_data, by = "Subject")
-    complete_metrics = names(complete_data)
-
-    complete_independent = complete_data[match(c(clinical_metrics, ntwk_metrics), names(complete_data))]
-    complete_independent <- complete_independent[-match("Isolates", names(complete_independent))]
-    complete_independent = complete_independent[sapply(complete_independent, is.numeric)]
-
-    if (omit == TRUE) {
-        complete_noNA = na.omit(complete_independent)
-        complete.cor <- cor(complete_noNA)
-    } else {
-        complete.cor <- cor(complete_independent)
-    }
-   
-    complete.m <- melt(complete.cor)
-    complete.o <- complete.m[order(complete.m$value), ]
-    complete.o$X1 <- factor(complete.o$X1, levels = unique(complete.o$X1))
-    complete.o$X2 <- factor(complete.o$X2, levels = unique(complete.o$X2))
-
-    dev.new()
-    breaks = c(-1, -0.5, 0, 0.5, 1)
-    colours=c("red", "white", "steelblue")
-    print(p <- ggplot(complete.o) + geom_tile(aes(X1, X2, fill = value)) + scale_fill_gradientn(colours=colours, breaks=breaks, labels=format(breaks)) + labs(x = "Metric", y = "Metric", fill= "Correlation") + opts(title=title, axis.text.x=theme_text(angle=-90, hjust=0)))
 }
 
 plot_average_bargraph_bygroup <- function(filename, metric, group1, group2, group_metrics, ntwk_metrics, clinical_metrics, node_id) {
@@ -664,16 +566,16 @@ plot_average_bargraph <- function(filename, metric, group, group_metrics, ntwk_m
     g1d1_test_results <- t.test(grp1_data1[, metric], grp1_data2[, metric], alternative="two.sided")
 
     if (g1d1_test_results$p.value < 0.001) {
-        g1d1_stat_result = '***'
+        g1d1_stat_result = paste('*** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.001). Adding ***\n'))
     } else if (g1d1_test_results$p.value < 0.01) {
-        g1d1_stat_result = '**'
+        g1d1_stat_result = paste('** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.01). Adding **\n'))
     } else if (g1d1_test_results$p.value < 0.05) {    
-        g1d1_stat_result = '*'
+        g1d1_stat_result = paste('* p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.05). Adding *\n'))
     } else {
-        g1d1_stat_result = 'n.s.'
+        g1d1_stat_result = paste('n.s. p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is not significant (p > 0.05). Adding n.s.\n'))
     }
     print(g1d1_test_results)
@@ -819,16 +721,16 @@ plot_average_edges_bargraph_bygroup <- function(filename, group) {
     g1d1_test_results <- t.test(grp1_data1[, metric], grp1_data2[, metric], alternative="two.sided")
 
     if (g1d1_test_results$p.value < 0.001) {
-        g1d1_stat_result = '***'
+        g1d1_stat_result = paste('*** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.001). Adding ***\n'))
     } else if (g1d1_test_results$p.value < 0.01) {
-        g1d1_stat_result = '**'
+        g1d1_stat_result = paste('** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.01). Adding **\n'))
     } else if (g1d1_test_results$p.value < 0.05) {    
-        g1d1_stat_result = '*'
+        g1d1_stat_result = paste('* p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.05). Adding *\n'))
     } else {
-        g1d1_stat_result = 'n.s.'
+        g1d1_stat_result = paste('n.s. p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is not significant (p > 0.05). Adding n.s.\n'))
     }
     print(g1d1_test_results)
@@ -960,16 +862,16 @@ plot_average_metric_bargraph_bygroup <- function(filename, metric, group) {
     g1d1_test_results <- t.test(grp1_data1[, metric], grp1_data2[, metric], alternative="two.sided")
 
     if (g1d1_test_results$p.value < 0.001) {
-        g1d1_stat_result = '***'
+        g1d1_stat_result = paste('*** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.001). Adding ***\n'))
     } else if (g1d1_test_results$p.value < 0.01) {
-        g1d1_stat_result = '**'
+        g1d1_stat_result = paste('** p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.01). Adding **\n'))
     } else if (g1d1_test_results$p.value < 0.05) {    
-        g1d1_stat_result = '*'
+        g1d1_stat_result = paste('* p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is statistically significant (p < 0.05). Adding *\n'))
     } else {
-        g1d1_stat_result = 'n.s.'
+        g1d1_stat_result = paste('n.s. p=', round(g1d1_test_results$p.value,4))
         cat(paste('The difference in means for', g1d1, 'is not significant (p > 0.05). Adding n.s.\n'))
     }
     print(g1d1_test_results)
@@ -1007,14 +909,22 @@ plot_average_metric_bargraph_bygroup <- function(filename, metric, group) {
     ggsave(paste(title,'.pdf', sep=""))
 }
 
-plot_global_metric_bargraph_bygroup <- function(filename, metric, group) {
-    library(ggplot2)
-    library(reshape)
-    library(car)
-    title = paste('Average',metric, 'by', group)
+plot_nodal_bargraph_onegroup <- function(filename, node_id, metric, group, group_metrics, ntwk_metrics, clinical_metrics) {
+    title = paste(node_id, metric, 'by', group)
+    ntwk_metrics <- ntwk_metrics[-match(metric,ntwk_metrics)]
+    clinical_metrics <- clinical_metrics[-match(group,clinical_metrics)]
+    unneccessary_group_metrics <- group_metrics[-match(group,group_metrics)]
+    clinical_metrics <- clinical_metrics[-match(unneccessary_group_metrics,clinical_metrics)]
 
-    df = read.csv(filename, header=T) # Read in the comma-separated value file
-    complete_data = df[match(c("Subject", group, metric), names(df))]
+    data = read.csv(file=filename, header=TRUE)    
+    node_data <- subset(data, Node==node_id)
+
+    complete_data <- node_data
+    complete_data <- complete_data[,-match(clinical_metrics,names(complete_data))]
+    complete_data <- complete_data[,-match("Node",names(complete_data))]
+    rownames(complete_data)=complete_data[,match("Subject",names(complete_data))] # Set subject name as row names    
+    attach(complete_data)
+
     
     split_by = group
     
@@ -1084,36 +994,6 @@ plot_global_metric_bargraph_bygroup <- function(filename, metric, group) {
         opts(axis.title.x = theme_text(size = 15, vjust = 0.3, hjust = 0.5)) +
         opts(title = title))
             
-    ggsave(paste(title,'.pdf', sep=""))
-}
-
-plot_global_metric_histogram_bygroup <- function(filename, metric, group) {
-    library(ggplot2)
-    library(reshape)
-    library(car)
-    title = paste('Histogram of', metric, 'vs.', group)
-
-    df = read.csv(filename, header=T) # Read in the comma-separated value file
-    complete_data = df[match(c("Subject", group, metric), names(df))]
-   
-    split_by = group
-    
-    complete_data$dummy <- complete_data[, group]
-    
-    dev.new()
-    g <- ggplot(complete_data, aes_string(x = metric))
-    print(g +
-        geom_histogram(aes(y=..count..),      # Histogram with density instead of count on y-axis
-                   colour="black", fill="white") +
-  		#geom_line(aes(y = ..density..), stat="density",
-        #    size = 1, colour="red", linetype=1) + #, alpha = 0.2) + 
-        stat_density(aes(y = ..scaled..), alpha=.4, fill="black") + 
-        #geom_density(aes(y = ..density..), alpha=.2, fill="black") +
-    	facet_wrap(~ dummy, nrow = 2) + #, scales = 'free_y', nrows=2) +
-        theme_bw() + 
-        labs(x=metric, y='Number of Subjects') +
-        opts(axis.title.x = theme_text(size = 15, vjust = 0.3, hjust = 0.5)) +
-        opts(title = title))
-    
-    ggsave(paste(title,'.pdf', sep=""))
+    ggsave(paste(title,'.png', sep=""))
+    cat(paste(title,'.png\n', sep=""))
 }
